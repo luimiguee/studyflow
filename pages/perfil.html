@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil - StudyFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/clean.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="../index.html" class="navbar-brand">
+          <div class="navbar-logo">S</div>
+          <span>StudyFlow</span>
+        </a>
+        <nav>
+          <ul class="navbar-nav" id="navbar-menu"></ul>
+          <button class="theme-toggle" aria-label="Alternar tema" onclick="ThemeManager.toggleTheme()">
+            <span class="theme-icon">🌙</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <div class="page-container">
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">Perfil</h1>
+        <p class="page-subtitle">Informações da sua conta</p>
+      </div>
+
+      <!-- Alert Container -->
+      <div id="alert-container"></div>
+
+      <!-- Informações do Utilizador -->
+      <div class="card mb-4">
+        <h2 style="margin-bottom: 1.5rem;">Informações Pessoais</h2>
+        <form id="profile-form" onsubmit="updateProfile(event)">
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label class="form-label">Nome</label>
+              <input type="text" class="form-input" id="user-name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">E-mail</label>
+              <input type="email" class="form-input" id="user-email" required disabled>
+              <small style="color: var(--subtext); font-size: 0.875rem;">O e-mail não pode ser alterado</small>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo de Conta</label>
+            <input type="text" class="form-input" id="user-role" disabled>
+          </div>
+          <button type="submit" class="btn btn-primary" id="save-profile-btn">Guardar Alterações</button>
+        </form>
+      </div>
+
+      <!-- Alterar Palavra-passe -->
+      <div class="card mb-4">
+        <h2 style="margin-bottom: 1.5rem;">Alterar Palavra-passe</h2>
+        <form id="password-form" onsubmit="changePassword(event)">
+          <div class="form-group">
+            <label class="form-label">Palavra-passe Actual</label>
+            <input type="password" class="form-input" id="current-password" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nova Palavra-passe</label>
+            <input type="password" class="form-input" id="new-password" required minlength="6">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirmar Nova Palavra-passe</label>
+            <input type="password" class="form-input" id="confirm-password" required minlength="6">
+          </div>
+          <button type="submit" class="btn btn-primary" id="save-password-btn">Alterar Palavra-passe</button>
+        </form>
+      </div>
+
+      <!-- Estatísticas -->
+      <div class="card">
+        <h2 style="margin-bottom: 1.5rem;">Estatísticas</h2>
+        <div id="user-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+          <div>
+            <div style="font-weight: 500; margin-bottom: 0.5rem; color: var(--subtext);">Total de Tarefas</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--primary);" id="stats-tasks">-</div>
+          </div>
+          <div>
+            <div style="font-weight: 500; margin-bottom: 0.5rem; color: var(--subtext);">Tarefas Concluídas</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--secondary);" id="stats-completed">-</div>
+          </div>
+          <div>
+            <div style="font-weight: 500; margin-bottom: 0.5rem; color: var(--subtext);">Tarefas Pendentes</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--warning);" id="stats-pending">-</div>
+          </div>
+          <div>
+            <div style="font-weight: 500; margin-bottom: 0.5rem; color: var(--subtext);">Data de Registo</div>
+            <div style="font-size: 1rem; font-weight: 600; color: var(--text);" id="stats-created">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/theme.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    // Verificar autenticação
+    const user = JSON.parse(localStorage.getItem('studyflow-user') || 'null');
+    if (!user) {
+      window.location.href = '../login.html';
+    }
+
+    // Carregar navbar
+    function loadNavbar() {
+      const menu = document.getElementById('navbar-menu');
+      menu.innerHTML = `
+        <li><a href="../dashboard.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="tarefas.html" class="navbar-link">Tarefas</a></li>
+        <li><a href="calendario.html" class="navbar-link">Calendário</a></li>
+        <li><a href="perfil.html" class="navbar-link active">Perfil</a></li>
+        <li><a href="#" onclick="API.logout(); return false;" class="navbar-link">Sair</a></li>
+      `;
+    }
+
+    // Carregar perfil
+    async function loadProfile() {
+      try {
+        const currentUser = await API.getCurrentUser();
+        if (currentUser) {
+          document.getElementById('user-name').value = currentUser.name;
+          document.getElementById('user-email').value = currentUser.email;
+          document.getElementById('user-role').value = currentUser.role === 'admin' ? 'Administrador' : 'Estudante';
+          document.getElementById('stats-created').textContent = new Date(currentUser.created_at).toLocaleDateString('pt-PT');
+        }
+
+        // Carregar estatísticas
+        const tasks = await API.getTasks();
+        const completed = tasks.filter(t => t.status === 'concluida').length;
+        const pending = tasks.filter(t => t.status !== 'concluida').length;
+
+        document.getElementById('stats-tasks').textContent = tasks.length;
+        document.getElementById('stats-completed').textContent = completed;
+        document.getElementById('stats-pending').textContent = pending;
+      } catch (error) {
+        console.error('Erro ao carregar perfil:', error);
+      }
+    }
+
+    // Actualizar perfil
+    async function updateProfile(event) {
+      event.preventDefault();
+      const saveBtn = document.getElementById('save-profile-btn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'A guardar...';
+
+      try {
+        // Nota: A API atual não tem endpoint para atualizar perfil do próprio utilizador
+        // Isso precisaria ser implementado no backend
+        Utils.showSuccess('alert-container', 'Perfil actualizado com sucesso! (Funcionalidade a ser implementada)');
+      } catch (error) {
+        console.error('Erro ao actualizar perfil:', error);
+        Utils.showError('alert-container', 'Erro ao actualizar perfil: ' + error.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Guardar Alterações';
+      }
+    }
+
+    // Alterar palavra-passe
+    async function changePassword(event) {
+      event.preventDefault();
+      
+      const newPassword = document.getElementById('new-password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+
+      if (newPassword !== confirmPassword) {
+        Utils.showError('alert-container', 'As palavras-passe não coincidem');
+        return;
+      }
+
+      const saveBtn = document.getElementById('save-password-btn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'A alterar...';
+
+      try {
+        // Nota: A API atual não tem endpoint para alterar palavra-passe
+        // Isso precisaria ser implementado no backend
+        Utils.showSuccess('alert-container', 'Palavra-passe alterada com sucesso! (Funcionalidade a ser implementada)');
+        document.getElementById('password-form').reset();
+      } catch (error) {
+        console.error('Erro ao alterar palavra-passe:', error);
+        Utils.showError('alert-container', 'Erro ao alterar palavra-passe: ' + error.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Alterar Palavra-passe';
+      }
+    }
+
+    // Inicializar
+    loadNavbar();
+    
+    // Atualizar ícone do tema
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.updateThemeToggle();
+    }
+    loadProfile();
+  </script>
+</body>
+</html>
+

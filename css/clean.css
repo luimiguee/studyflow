@@ -1,0 +1,118 @@
+/* Estilos Clean Adicionais */
+
+/* Melhorias de espaçamento */
+.page-container .container {
+  max-width: 1280px;
+}
+
+/* Cards mais clean */
+.card {
+  backdrop-filter: blur(10px);
+}
+
+/* Tabelas mais clean */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+table thead th {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--subtext);
+  padding: 1.25rem 1.5rem;
+}
+
+table tbody td {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+table tbody tr:first-child td {
+  border-top: none;
+}
+
+table tbody tr:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Badges e tags mais clean */
+.badge {
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
+  border-radius: 20px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/* Inputs mais clean */
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--subtext);
+  opacity: 0.6;
+}
+
+/* Botões mais clean */
+.btn-sm {
+  padding: 0.5rem 1.125rem;
+  font-size: 0.875rem;
+  border-radius: 10px;
+}
+
+/* Separadores mais clean */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2rem 0;
+}
+
+/* Lista mais clean */
+ul, ol {
+  padding-left: 1.5rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+}
+
+/* Espaçamento melhorado */
+.section-spacing {
+  margin-bottom: 3rem;
+}
+
+/* Transições suaves */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Loading spinner mais clean */
+.spinner {
+  border-width: 2.5px;
+  width: 20px;
+  height: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Modal backdrop mais clean */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+}
+
+/* Cards com gradiente suave (opcional) */
+.card-gradient {
+  background: linear-gradient(135deg, var(--card-bg) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+
+
+
+

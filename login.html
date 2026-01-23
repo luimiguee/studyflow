@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - StudyFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .login-container {
+      min-height: calc(100vh - 80px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div style="text-align: center; margin-bottom: 2rem; position: relative;">
+        <button class="theme-toggle" aria-label="Alternar tema" onclick="ThemeManager.toggleTheme()" style="position: absolute; top: 0; right: 0;">
+          <span class="theme-icon">🌙</span>
+        </button>
+        <a href="index.html" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--text); margin-bottom: 1rem;">
+          <div class="navbar-logo" style="width: 40px; height: 40px; font-size: 1.5rem;">S</div>
+          <span style="font-size: 1.5rem; font-weight: bold;">StudyFlow</span>
+        </a>
+        <h1 style="font-size: 2rem; margin-bottom: 0.5rem;">Bem-vindo de volta</h1>
+        <p style="color: var(--subtext);">Entre na sua conta para continuar</p>
+      </div>
+
+      <div class="card">
+        <div id="alert-container"></div>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="email" class="form-input" placeholder="seu@email.com" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Senha</label>
+            <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="submit-btn">
+            Entrar
+          </button>
+        </form>
+
+        <div style="margin-top: 1.5rem; text-align: center;">
+          <p style="font-size: 0.875rem; color: var(--subtext);">
+            Não tem uma conta? 
+            <a href="register.html" style="color: var(--primary); text-decoration: none; font-weight: 500;">Registrar-se</a>
+          </p>
+        </div>
+
+        <!-- Credenciais de demonstração -->
+        <div style="margin-top: 1.5rem; padding: 1rem; background: var(--hover-bg); border-radius: 8px;">
+          <p style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem;">Contas de demonstração:</p>
+          <div style="font-size: 0.75rem; color: var(--subtext);">
+            <p><strong>Admin:</strong> admin@studyflow.com / admin123</p>
+            <p><strong>Estudante:</strong> estudante@studyflow.com / estudante123</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 1rem;">
+        <a href="index.html" style="font-size: 0.875rem; color: var(--subtext); text-decoration: none;">
+          ← Voltar para a página inicial
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configuração da API (produção) - descomente e configure para usar backend externo -->
+  <!-- <script src="js/config.production.js"></script> -->
+  <script src="js/api.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Atualizar ícone do tema
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.updateThemeToggle();
+    }
+  </script>
+  <script src="js/utils.js"></script>
+  <script src="js/activityLog.js"></script>
+  <script src="js/emailService.js"></script>
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const submitBtn = document.getElementById('submit-btn');
+      
+      Utils.clearAlerts('alert-container');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Entrando...';
+
+      try {
+        const success = await Auth.login(email, password);
+        
+        if (success) {
+          const user = Auth.getCurrentUser();
+          if (user.role === 'admin') {
+            window.location.href = 'pages/admin-dashboard.html';
+          } else {
+            window.location.href = 'dashboard.html';
+          }
+        } else {
+          Utils.showError('alert-container', 'Email ou senha incorretos');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Entrar';
+        }
+      } catch (error) {
+        Utils.showError('alert-container', 'Erro ao fazer login. Tente novamente.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Entrar';
+      }
+    });
+    
+    // Atualizar ícone do tema
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.updateThemeToggle();
+    }
+  </script>
+</body>
+</html>
+

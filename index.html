@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudyFlow - Gestão de Estudos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="index.html" class="navbar-brand">
+          <div class="navbar-logo">S</div>
+          <span>StudyFlow</span>
+        </a>
+        <nav>
+          <ul class="navbar-nav">
+            <li><a href="login.html" class="navbar-link">Entrar</a></li>
+            <li><a href="register.html" class="btn btn-primary btn-sm">Registar</a></li>
+            <li><button class="theme-toggle" aria-label="Alternar tema" onclick="ThemeManager.toggleTheme()">
+              <span class="theme-icon">🌙</span>
+            </button></li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section style="padding: 5rem 0; text-align: center;">
+    <div class="container">
+      <h1 style="font-size: 3rem; margin-bottom: 1.5rem;">
+        Organize seus estudos de forma
+        <span style="color: var(--primary);"> inteligente</span>
+      </h1>
+      <p style="font-size: 1.25rem; color: var(--subtext); margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        A plataforma completa para gerenciar tarefas, testes, trabalhos e estudos. Tudo em um só lugar.
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="register.html" class="btn btn-primary">Começar Grátis</a>
+        <a href="login.html" class="btn btn-outline">Já tenho conta</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section style="padding: 5rem 0; background: var(--card-bg);">
+    <div class="container">
+      <h2 style="text-align: center; margin-bottom: 3rem;">Recursos Principais</h2>
+      <div class="grid grid-3">
+        <div class="card text-center">
+          <div style="width: 64px; height: 64px; background: var(--primary); border-radius: 12px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+            ✓
+          </div>
+          <h3 style="margin-bottom: 1rem;">Gestão de Tarefas</h3>
+          <p>Organize todas as suas tarefas, testes e trabalhos em um só lugar. Defina prioridades e prazos.</p>
+        </div>
+
+        <div class="card text-center">
+          <div style="width: 64px; height: 64px; background: var(--secondary); border-radius: 12px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+            📅
+          </div>
+          <h3 style="margin-bottom: 1rem;">Calendário Inteligente</h3>
+          <p>Visualize seus compromissos em um calendário interativo. Nunca perca um prazo importante.</p>
+        </div>
+
+        <div class="card text-center">
+          <div style="width: 64px; height: 64px; background: var(--primary); border-radius: 12px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+            📊
+          </div>
+          <h3 style="margin-bottom: 1rem;">Dashboard Completo</h3>
+          <p>Acompanhe seu progresso com estatísticas detalhadas e gráficos visuais.</p>
+        </div>
+
+        <div class="card text-center">
+          <div style="width: 64px; height: 64px; background: var(--secondary); border-radius: 12px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+            🔔
+          </div>
+          <h3 style="margin-bottom: 1rem;">Notificações</h3>
+          <p>Receba avisos sobre prazos próximos e tarefas importantes.</p>
+        </div>
+
+        <div class="card text-center">
+          <div style="width: 64px; height: 64px; background: var(--primary); border-radius: 12px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+            🎨
+          </div>
+          <h3 style="margin-bottom: 1rem;">Personalização</h3>
+          <p>Customize temas, cores e preferências de acordo com seu estilo.</p>
+        </div>
+
+        <div class="card text-center">
+          <div style="width: 64px; height: 64px; background: var(--secondary); border-radius: 12px; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">
+            📈
+          </div>
+          <h3 style="margin-bottom: 1rem;">Acompanhamento</h3>
+          <p>Monitore seu progresso e melhore sua produtividade ao longo do tempo.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section style="padding: 5rem 0; text-align: center;">
+    <div class="container">
+      <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">Pronto para começar?</h2>
+      <p style="font-size: 1.25rem; color: var(--subtext); margin-bottom: 2rem;">
+        Crie sua conta gratuitamente e comece a organizar seus estudos hoje mesmo.
+      </p>
+      <a href="register.html" class="btn btn-primary">Criar Conta Grátis</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="background: var(--card-bg); border-top: 1px solid var(--border); padding: 2rem 0; margin-top: 4rem;">
+    <div class="container text-center">
+      <p style="color: var(--subtext);">&copy; 2024 StudyFlow. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <script src="js/theme.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    // Atualizar ícone do tema após carregar
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.updateThemeToggle();
+    }
+  </script>
+</body>
+</html>
+

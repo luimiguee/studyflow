@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - StudyFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/clean.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="index.html" class="navbar-brand">
+          <div class="navbar-logo">S</div>
+          <span>StudyFlow</span>
+        </a>
+        <nav>
+          <ul class="navbar-nav" id="navbar-menu"></ul>
+          <button class="theme-toggle" aria-label="Alternar tema" onclick="ThemeManager.toggleTheme()">
+            <span class="theme-icon">🌙</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <div class="page-container">
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle" id="welcome-message">Bem-vindo de volta!</p>
+      </div>
+
+      <!-- Estatísticas -->
+      <div class="grid grid-4 mb-4">
+        <div class="card">
+          <div class="card-title" style="font-size: 0.875rem; color: var(--subtext); margin-bottom: 0.5rem;">Tarefas</div>
+          <div style="font-size: 2rem; font-weight: bold; color: var(--primary);" id="total-tasks">0</div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.875rem; color: var(--subtext); margin-bottom: 0.5rem;">Concluídas</div>
+          <div style="font-size: 2rem; font-weight: bold; color: var(--secondary);" id="completed-tasks">0</div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.875rem; color: var(--subtext); margin-bottom: 0.5rem;">Pendentes</div>
+          <div style="font-size: 2rem; font-weight: bold; color: var(--warning);" id="pending-tasks">0</div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.875rem; color: var(--subtext); margin-bottom: 0.5rem;">Atrasadas</div>
+          <div style="font-size: 2rem; font-weight: bold; color: var(--danger);" id="overdue-tasks">0</div>
+        </div>
+      </div>
+
+      <!-- Barra de Progresso -->
+      <div class="card mb-4">
+        <h3 style="margin-bottom: 1rem;">Progresso Geral</h3>
+        <div style="background: var(--hover-bg); border-radius: 8px; height: 24px; overflow: hidden;">
+          <div id="progress-bar" style="background: var(--primary); height: 100%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.875rem; font-weight: 500;" style="width: 0%;">0%</div>
+        </div>
+      </div>
+
+      <!-- Próximas Tarefas -->
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="flex-between mb-2">
+            <h3>Próximas Tarefas</h3>
+            <a href="pages/tarefas.html" class="btn btn-sm btn-outline">Ver todas</a>
+          </div>
+          <div id="upcoming-tasks">
+            <p style="color: var(--subtext);">Carregando...</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="flex-between mb-2">
+            <h3>Tarefas Atrasadas</h3>
+            <a href="pages/tarefas.html" class="btn btn-sm btn-outline">Ver todas</a>
+          </div>
+          <div id="overdue-tasks-list">
+            <p style="color: var(--subtext);">Carregando...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configuração da API (produção) - descomente e configure para usar backend externo -->
+  <!-- <script src="js/config.production.js"></script> -->
+  <script src="js/theme.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/activityLog.js"></script>
+  <script src="js/emailService.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    // Carregar navbar
+    function loadNavbar() {
+      const user = Auth.getCurrentUser();
+      const menu = document.getElementById('navbar-menu');
+      
+      if (user) {
+        menu.innerHTML = `
+          <li><a href="dashboard.html" class="navbar-link active">Dashboard</a></li>
+          <li><a href="pages/tarefas.html" class="navbar-link">Tarefas</a></li>
+          <li><a href="pages/calendario.html" class="navbar-link">Calendário</a></li>
+          <li><a href="pages/perfil.html" class="navbar-link">Perfil</a></li>
+          <li><a href="#" onclick="API.logout(); return false;" class="navbar-link">Sair</a></li>
+        `;
+      }
+      
+      // Atualizar ícone do tema
+      if (typeof ThemeManager !== 'undefined') {
+        ThemeManager.updateThemeToggle();
+      }
+    }
+
+    // Carregar dados do dashboard
+    function loadDashboard() {
+      const user = Auth.getCurrentUser();
+      if (!user) return;
+
+      document.getElementById('welcome-message').textContent = `Bem-vindo, ${user.name}!`;
+
+      const tasks = Tasks.getUserTasks();
+      const completed = tasks.filter(t => t.completed).length;
+      const pending = tasks.filter(t => !t.completed).length;
+      const overdue = Tasks.getOverdue().length;
+      const progress = tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0;
+
+      // Atualizar estatísticas
+      document.getElementById('total-tasks').textContent = tasks.length;
+      document.getElementById('completed-tasks').textContent = completed;
+      document.getElementById('pending-tasks').textContent = pending;
+      document.getElementById('overdue-tasks').textContent = overdue;
+
+      // Atualizar barra de progresso
+      const progressBar = document.getElementById('progress-bar');
+      progressBar.style.width = progress + '%';
+      progressBar.textContent = progress + '%';
+
+      // Próximas tarefas (3 dias)
+      const upcoming = Tasks.getUpcoming(3);
+      const upcomingHtml = upcoming.length > 0
+        ? upcoming.slice(0, 5).map(task => `
+            <div style="padding: 0.75rem; border-bottom: 1px solid var(--border);">
+              <div class="flex-between">
+                <div>
+                  <strong>${task.title}</strong>
+                  <p style="font-size: 0.875rem; color: var(--subtext); margin-top: 0.25rem;">
+                    ${Utils.formatDate(task.dueDate)}
+                  </p>
+                </div>
+                <span style="padding: 0.25rem 0.5rem; background: var(--primary); color: white; border-radius: 4px; font-size: 0.75rem;">
+                  ${task.priority}
+                </span>
+              </div>
+            </div>
+          `).join('')
+        : '<p style="color: var(--subtext);">Nenhuma tarefa próxima</p>';
+      document.getElementById('upcoming-tasks').innerHTML = upcomingHtml;
+
+      // Tarefas atrasadas
+      const overdueTasks = Tasks.getOverdue();
+      const overdueHtml = overdueTasks.length > 0
+        ? overdueTasks.slice(0, 5).map(task => `
+            <div style="padding: 0.75rem; border-bottom: 1px solid var(--border);">
+              <div class="flex-between">
+                <div>
+                  <strong>${task.title}</strong>
+                  <p style="font-size: 0.875rem; color: var(--danger); margin-top: 0.25rem;">
+                    Atrasada desde ${Utils.formatDate(task.dueDate)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          `).join('')
+        : '<p style="color: var(--subtext);">Nenhuma tarefa atrasada</p>';
+      document.getElementById('overdue-tasks-list').innerHTML = overdueHtml;
+    }
+
+    // Inicializar
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        loadNavbar();
+        loadDashboard();
+      });
+    } else {
+      loadNavbar();
+      loadDashboard();
+    }
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tarefas - StudyFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/clean.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="../index.html" class="navbar-brand">
+          <div class="navbar-logo">S</div>
+          <span>StudyFlow</span>
+        </a>
+        <nav>
+          <ul class="navbar-nav" id="navbar-menu"></ul>
+          <button class="theme-toggle" aria-label="Alternar tema" onclick="ThemeManager.toggleTheme()">
+            <span class="theme-icon">🌙</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <div class="page-container">
+    <div class="container">
+      <div class="page-header flex-between">
+        <div>
+          <h1 class="page-title">Tarefas</h1>
+          <p class="page-subtitle">Gerir as suas tarefas</p>
+        </div>
+        <button class="btn btn-primary" onclick="openTaskModal()">+ Nova Tarefa</button>
+      </div>
+
+      <!-- Alert Container -->
+      <div id="alert-container"></div>
+
+      <!-- Filtros -->
+      <div class="card mb-4">
+        <div class="grid grid-3">
+          <div class="form-group">
+            <label class="form-label">Buscar</label>
+            <input type="text" class="form-input" id="search-input" placeholder="Título ou descrição..." onkeyup="filterTasks()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-select" id="status-filter" onchange="filterTasks()">
+              <option value="">Todos</option>
+              <option value="pendente">Pendente</option>
+              <option value="em_progresso">Em Progresso</option>
+              <option value="concluida">Concluída</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prioridade</label>
+            <select class="form-select" id="priority-filter" onchange="filterTasks()">
+              <option value="">Todas</option>
+              <option value="baixa">Baixa</option>
+              <option value="media">Média</option>
+              <option value="alta">Alta</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Tarefas -->
+      <div class="card">
+        <div id="tasks-loading" style="text-align: center; padding: 2rem;">
+          <div class="spinner" style="margin: 0 auto;"></div>
+          <p style="margin-top: 1rem; color: var(--subtext);">A carregar tarefas...</p>
+        </div>
+          <div id="tasks-list" style="display: none; border-radius: 12px; overflow: hidden;"></div>
+        <div id="tasks-empty" style="display: none; text-align: center; padding: 3rem;">
+          <p style="color: var(--subtext);">Nenhuma tarefa encontrada</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Criar/Editar Tarefa -->
+  <div id="task-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+      <div class="flex-between mb-3">
+        <h2 id="modal-title">Nova Tarefa</h2>
+        <button onclick="closeTaskModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--subtext);">&times;</button>
+      </div>
+      <form id="task-form" onsubmit="saveTask(event)">
+        <div class="form-group">
+          <label class="form-label">Título *</label>
+          <input type="text" class="form-input" id="task-title" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descrição</label>
+          <textarea class="form-textarea" id="task-description" rows="4"></textarea>
+        </div>
+        <div class="grid grid-2">
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-select" id="task-status">
+              <option value="pendente">Pendente</option>
+              <option value="em_progresso">Em Progresso</option>
+              <option value="concluida">Concluída</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prioridade</label>
+            <select class="form-select" id="task-priority">
+              <option value="baixa">Baixa</option>
+              <option value="media" selected>Média</option>
+              <option value="alta">Alta</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data Limite</label>
+          <input type="date" class="form-input" id="task-due-date">
+        </div>
+        <div class="flex gap-2" style="margin-top: 1.5rem;">
+          <button type="button" class="btn btn-outline btn-block" onclick="closeTaskModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-block" id="save-btn">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/theme.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    // Verificar autenticação
+    const user = JSON.parse(localStorage.getItem('studyflow-user') || 'null');
+    if (!user) {
+      window.location.href = '../login.html';
+    }
+
+    let tasks = [];
+    let editingTaskId = null;
+
+    // Carregar navbar
+    function loadNavbar() {
+      const menu = document.getElementById('navbar-menu');
+      menu.innerHTML = `
+        <li><a href="../dashboard.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="tarefas.html" class="navbar-link active">Tarefas</a></li>
+        <li><a href="calendario.html" class="navbar-link">Calendário</a></li>
+        <li><a href="perfil.html" class="navbar-link">Perfil</a></li>
+        <li><a href="#" onclick="API.logout(); return false;" class="navbar-link">Sair</a></li>
+      `;
+    }
+
+    // Carregar tarefas
+    async function loadTasks() {
+      try {
+        document.getElementById('tasks-loading').style.display = 'block';
+        document.getElementById('tasks-list').style.display = 'none';
+        document.getElementById('tasks-empty').style.display = 'none';
+
+        tasks = await API.getTasks();
+        displayTasks(tasks);
+
+        document.getElementById('tasks-loading').style.display = 'none';
+        if (tasks.length > 0) {
+          document.getElementById('tasks-list').style.display = 'block';
+        } else {
+          document.getElementById('tasks-empty').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Erro ao carregar tarefas:', error);
+        document.getElementById('tasks-loading').style.display = 'none';
+        Utils.showError('alert-container', 'Erro ao carregar tarefas: ' + error.message);
+      }
+    }
+
+    // Exibir tarefas
+    function displayTasks(tasksList) {
+      const container = document.getElementById('tasks-list');
+      container.innerHTML = tasksList.map(task => {
+        const dueDate = task.due_date ? new Date(task.due_date).toLocaleDateString('pt-PT') : 'Sem data limite';
+        const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'concluida';
+        
+        const statusColors = {
+          'pendente': 'var(--warning)',
+          'em_progresso': 'var(--primary)',
+          'concluida': 'var(--secondary)'
+        };
+
+        const priorityColors = {
+          'baixa': 'var(--secondary)',
+          'media': 'var(--warning)',
+          'alta': 'var(--danger)'
+        };
+
+        const statusLabels = {
+          'pendente': 'Pendente',
+          'em_progresso': 'Em Progresso',
+          'concluida': 'Concluída'
+        };
+
+        const priorityLabels = {
+          'baixa': 'Baixa',
+          'media': 'Média',
+          'alta': 'Alta'
+        };
+
+        return `
+          <div style="padding: 1.75rem; border-bottom: 1px solid var(--border); background: var(--card-bg); transition: background 0.2s; ${task.status === 'concluida' ? 'opacity: 0.65;' : ''}">
+            <div class="flex-between" style="align-items: flex-start; gap: 1.5rem;">
+              <div style="flex: 1; min-width: 0;">
+                <h3 style="margin: 0 0 0.75rem 0; font-size: 1.125rem; font-weight: 600; ${task.status === 'concluida' ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${task.title}</h3>
+                ${task.description ? `<p style="color: var(--subtext); margin: 0 0 1rem 0; font-size: 0.9375rem; line-height: 1.5;">${task.description}</p>` : ''}
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+                  <span style="display: inline-flex; align-items: center; gap: 0.375rem; font-size: 0.8125rem; color: var(--subtext);">
+                    <span style="opacity: 0.6;">📅</span> ${dueDate}
+                  </span>
+                  <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; background: ${statusColors[task.status]}20; color: ${statusColors[task.status]};">
+                    ${statusLabels[task.status]}
+                  </span>
+                  <span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; background: ${priorityColors[task.priority]}20; color: ${priorityColors[task.priority]};">
+                    ${priorityLabels[task.priority]}
+                  </span>
+                  ${isOverdue ? '<span style="padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 500; background: rgba(208, 2, 27, 0.1); color: var(--danger);">⚠️ Atrasada</span>' : ''}
+                </div>
+              </div>
+              <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+                <button class="btn btn-sm btn-outline" onclick="editTask(${task.id})" style="white-space: nowrap;">Editar</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteTask(${task.id})" style="white-space: nowrap;">Eliminar</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Filtrar tarefas
+    function filterTasks() {
+      const search = document.getElementById('search-input').value.toLowerCase();
+      const statusFilter = document.getElementById('status-filter').value;
+      const priorityFilter = document.getElementById('priority-filter').value;
+
+      const filtered = tasks.filter(task => {
+        const matchesSearch = !search || 
+          task.title.toLowerCase().includes(search) || 
+          (task.description && task.description.toLowerCase().includes(search));
+        const matchesStatus = !statusFilter || task.status === statusFilter;
+        const matchesPriority = !priorityFilter || task.priority === priorityFilter;
+        return matchesSearch && matchesStatus && matchesPriority;
+      });
+
+      displayTasks(filtered);
+      document.getElementById('tasks-list').style.display = filtered.length > 0 ? 'block' : 'none';
+      document.getElementById('tasks-empty').style.display = filtered.length === 0 ? 'block' : 'none';
+    }
+
+    // Abrir modal criar tarefa
+    function openTaskModal() {
+      editingTaskId = null;
+      document.getElementById('modal-title').textContent = 'Nova Tarefa';
+      document.getElementById('task-form').reset();
+      // Resetar valores padrão
+      document.getElementById('task-status').value = 'pendente';
+      document.getElementById('task-priority').value = 'media';
+      document.getElementById('task-due-date').value = '';
+      document.getElementById('task-modal').style.display = 'flex';
+      // Focar no primeiro campo
+      setTimeout(() => {
+        document.getElementById('task-title').focus();
+      }, 100);
+    }
+
+    // Editar tarefa
+    async function editTask(id) {
+      try {
+        const task = await API.getTask(id);
+        editingTaskId = id;
+        document.getElementById('modal-title').textContent = 'Editar Tarefa';
+        document.getElementById('task-title').value = task.title;
+        document.getElementById('task-description').value = task.description || '';
+        document.getElementById('task-status').value = task.status;
+        document.getElementById('task-priority').value = task.priority;
+        document.getElementById('task-due-date').value = task.due_date || '';
+        document.getElementById('task-modal').style.display = 'flex';
+      } catch (error) {
+        console.error('Erro ao carregar tarefa:', error);
+        Utils.showError('alert-container', 'Erro ao carregar tarefa: ' + error.message);
+      }
+    }
+
+    // Fechar modal
+    function closeTaskModal() {
+      document.getElementById('task-modal').style.display = 'none';
+      editingTaskId = null;
+      document.getElementById('task-form').reset();
+      // Resetar data para hoje
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('task-due-date').value = '';
+    }
+
+    // Guardar tarefa
+    async function saveTask(event) {
+      event.preventDefault();
+      
+      const saveBtn = document.getElementById('save-btn');
+      const titleInput = document.getElementById('task-title');
+      
+      // Validar título
+      if (!titleInput.value.trim()) {
+        Utils.showError('alert-container', 'Por favor, preencha o título da tarefa.');
+        titleInput.focus();
+        return;
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = editingTaskId ? 'A guardar...' : 'A criar...';
+
+      try {
+        const taskData = {
+          title: titleInput.value.trim(),
+          description: document.getElementById('task-description').value.trim() || null,
+          status: document.getElementById('task-status').value,
+          priority: document.getElementById('task-priority').value,
+          due_date: document.getElementById('task-due-date').value || null
+        };
+
+        if (editingTaskId) {
+          await API.updateTask(editingTaskId, taskData);
+          Utils.showSuccess('alert-container', 'Tarefa atualizada com sucesso!');
+        } else {
+          await API.createTask(taskData);
+          Utils.showSuccess('alert-container', 'Tarefa criada com sucesso!');
+        }
+
+        closeTaskModal();
+        await loadTasks();
+        
+        // Scroll para o topo para ver a mensagem de sucesso
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (error) {
+        console.error('Erro ao guardar tarefa:', error);
+        const errorMessage = error.message || 'Erro ao guardar tarefa. Por favor, tente novamente.';
+        Utils.showError('alert-container', errorMessage);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Guardar';
+      }
+    }
+
+    // Eliminar tarefa
+    async function deleteTask(id) {
+      if (!confirm('Tem a certeza que deseja eliminar esta tarefa?')) return;
+
+      try {
+        await API.deleteTask(id);
+        Utils.showSuccess('alert-container', 'Tarefa eliminada com sucesso!');
+        loadTasks();
+      } catch (error) {
+        console.error('Erro ao eliminar tarefa:', error);
+        Utils.showError('alert-container', 'Erro ao eliminar tarefa: ' + error.message);
+      }
+    }
+
+    // Inicializar
+    loadNavbar();
+    
+    // Atualizar ícone do tema
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.updateThemeToggle();
+    }
+    loadTasks();
+  </script>
+</body>
+</html>
+

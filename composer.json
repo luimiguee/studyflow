@@ -1,0 +1,14 @@
+{
+    "name": "studyflow/studyflow-app",
+    "description": "StudyFlow Application",
+    "type": "project",
+    "require": {
+        "php": ">=8.2",
+        "phpmailer/phpmailer": "^6.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "StudyFlow\\": "api/"
+        }
+    }
+}

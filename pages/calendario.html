@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendário - StudyFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/clean.css">
+  <style>
+    .calendar-container {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .calendar-month-year {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .calendar-nav-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .calendar-nav-btn {
+      padding: 0.625rem 1rem;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .calendar-weekday {
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.8125rem;
+      color: var(--subtext);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.75rem 0;
+    }
+
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+    }
+
+    .calendar-day {
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      min-height: 120px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .calendar-day:hover {
+      background: var(--hover-bg);
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+    }
+
+    .calendar-day.other-month {
+      opacity: 0.3;
+      background: var(--hover-bg);
+    }
+
+    .calendar-day.today {
+      border-color: var(--primary);
+      background: rgba(74, 144, 226, 0.05);
+    }
+
+    .calendar-day.today .day-number {
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+    }
+
+    .calendar-day.selected {
+      border-color: var(--primary);
+      background: rgba(74, 144, 226, 0.1);
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    }
+
+    .day-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .day-tasks {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+    }
+
+    .day-task {
+      padding: 0.375rem 0.5rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .day-task:hover {
+      transform: scale(1.02);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .day-task.pendente {
+      background: rgba(245, 166, 35, 0.15);
+      color: #92400E;
+      border-left: 3px solid var(--warning);
+    }
+
+    .day-task.em_progresso {
+      background: rgba(74, 144, 226, 0.15);
+      color: #1E40AF;
+      border-left: 3px solid var(--primary);
+    }
+
+    .day-task.concluida {
+      background: rgba(80, 227, 194, 0.15);
+      color: #065F46;
+      border-left: 3px solid var(--secondary);
+    }
+
+    .day-more {
+      font-size: 0.6875rem;
+      color: var(--subtext);
+      font-weight: 500;
+      margin-top: 0.25rem;
+      text-align: center;
+    }
+
+    .selected-day-card {
+      margin-top: 2rem;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .selected-day-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .task-item {
+      padding: 1.25rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 1rem;
+      transition: all 0.2s ease;
+      background: var(--card-bg);
+    }
+
+    .task-item:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(74, 144, 226, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .task-item-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .task-item-description {
+      color: var(--subtext);
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      margin-bottom: 0.75rem;
+    }
+
+    .task-item-meta {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .task-badge {
+      padding: 0.375rem 0.875rem;
+      border-radius: 12px;
+      font-size: 0.8125rem;
+      font-weight: 500;
+    }
+
+    .task-badge.pendente {
+      background: rgba(245, 166, 35, 0.15);
+      color: #92400E;
+    }
+
+    .task-badge.em_progresso {
+      background: rgba(74, 144, 226, 0.15);
+      color: #1E40AF;
+    }
+
+    .task-badge.concluida {
+      background: rgba(80, 227, 194, 0.15);
+      color: #065F46;
+    }
+
+    .task-badge.prioridade-alta {
+      background: rgba(208, 2, 27, 0.15);
+      color: #991B1B;
+    }
+
+    .task-badge.prioridade-media {
+      background: rgba(245, 166, 35, 0.15);
+      color: #92400E;
+    }
+
+    .task-badge.prioridade-baixa {
+      background: rgba(80, 227, 194, 0.15);
+      color: #065F46;
+    }
+
+    .empty-day {
+      text-align: center;
+      padding: 3rem;
+      color: var(--subtext);
+    }
+
+    @media (max-width: 768px) {
+      .calendar-days {
+        gap: 0.25rem;
+      }
+
+      .calendar-day {
+        min-height: 80px;
+        padding: 0.5rem;
+      }
+
+      .calendar-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+      }
+
+      .calendar-nav-buttons {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .calendar-nav-btn {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="../index.html" class="navbar-brand">
+          <div class="navbar-logo">S</div>
+          <span>StudyFlow</span>
+        </a>
+        <nav>
+          <ul class="navbar-nav" id="navbar-menu"></ul>
+          <button class="theme-toggle" aria-label="Alternar tema" onclick="ThemeManager.toggleTheme()">
+            <span class="theme-icon">🌙</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <div class="page-container">
+    <div class="container">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Calendário</h1>
+          <p class="page-subtitle">Visualize as suas tarefas organizadas por data</p>
+        </div>
+      </div>
+
+      <div class="calendar-container">
+        <div class="calendar-header">
+          <div class="calendar-month-year" id="current-month-year"></div>
+          <div class="calendar-nav-buttons">
+            <button class="btn btn-outline calendar-nav-btn" onclick="changeMonth(-1)">← Anterior</button>
+            <button class="btn btn-outline calendar-nav-btn" onclick="goToToday()">Hoje</button>
+            <button class="btn btn-outline calendar-nav-btn" onclick="changeMonth(1)">Próximo →</button>
+          </div>
+        </div>
+
+        <div class="calendar-weekdays">
+          <div class="calendar-weekday">Dom</div>
+          <div class="calendar-weekday">Seg</div>
+          <div class="calendar-weekday">Ter</div>
+          <div class="calendar-weekday">Qua</div>
+          <div class="calendar-weekday">Qui</div>
+          <div class="calendar-weekday">Sex</div>
+          <div class="calendar-weekday">Sáb</div>
+        </div>
+
+        <div class="calendar-days" id="calendar-days"></div>
+      </div>
+
+      <!-- Tarefas do Dia Selecionado -->
+      <div class="selected-day-card" id="selected-day-card" style="display: none;">
+        <h2 class="selected-day-title" id="selected-day-title"></h2>
+        <div id="selected-day-tasks-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/theme.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    // Verificar autenticação
+    const user = JSON.parse(localStorage.getItem('studyflow-user') || 'null');
+    if (!user) {
+      window.location.href = '../login.html';
+    }
+
+    let currentDate = new Date();
+    let tasks = [];
+    let selectedDate = null;
+
+    const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                       'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+    const dayNames = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+
+    // Carregar navbar
+    function loadNavbar() {
+      const menu = document.getElementById('navbar-menu');
+      menu.innerHTML = `
+        <li><a href="../dashboard.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="tarefas.html" class="navbar-link">Tarefas</a></li>
+        <li><a href="calendario.html" class="navbar-link active">Calendário</a></li>
+        <li><a href="perfil.html" class="navbar-link">Perfil</a></li>
+        <li><a href="#" onclick="API.logout(); return false;" class="navbar-link">Sair</a></li>
+      `;
+    }
+
+    // Carregar tarefas
+    async function loadTasks() {
+      try {
+        tasks = await API.getTasks();
+        renderCalendar();
+      } catch (error) {
+        console.error('Erro ao carregar tarefas:', error);
+        Utils.showError('alert-container', 'Erro ao carregar tarefas: ' + error.message);
+      }
+    }
+
+    // Mudar mês
+    function changeMonth(delta) {
+      currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + delta, 1);
+      renderCalendar();
+    }
+
+    // Ir para hoje
+    function goToToday() {
+      currentDate = new Date();
+      selectedDate = null;
+      renderCalendar();
+      document.getElementById('selected-day-card').style.display = 'none';
+    }
+
+    // Renderizar calendário
+    function renderCalendar() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      
+      // Atualizar título
+      document.getElementById('current-month-year').textContent = 
+        `${monthNames[month]} ${year}`;
+
+      // Primeiro dia do mês
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const daysInMonth = lastDay.getDate();
+      const startingDayOfWeek = firstDay.getDay();
+
+      // Primeiro dia visível (pode ser do mês anterior)
+      const startDate = new Date(firstDay);
+      startDate.setDate(startDate.getDate() - startingDayOfWeek);
+
+      // Último dia visível (pode ser do próximo mês)
+      const endDate = new Date(lastDay);
+      const daysToAdd = 42 - (daysInMonth + startingDayOfWeek); // 6 semanas = 42 dias
+      endDate.setDate(endDate.getDate() + daysToAdd);
+
+      let html = '';
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let currentRenderDate = new Date(startDate);
+
+      while (currentRenderDate <= endDate) {
+        const dateStr = currentRenderDate.toISOString().split('T')[0];
+        const dayTasks = tasks.filter(t => t.due_date === dateStr);
+        const isToday = currentRenderDate.getTime() === today.getTime();
+        const isSelected = selectedDate && dateStr === selectedDate;
+        const isOtherMonth = currentRenderDate.getMonth() !== month;
+        const dayNumber = currentRenderDate.getDate();
+
+        html += `
+          <div class="calendar-day ${isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" 
+               onclick="selectDate('${dateStr}')">
+            <div class="day-number">${dayNumber}</div>
+            <div class="day-tasks">
+              ${dayTasks.slice(0, 3).map(task => `
+                <div class="day-task ${task.status}" title="${task.title}">${task.title}</div>
+              `).join('')}
+              ${dayTasks.length > 3 ? `<div class="day-more">+${dayTasks.length - 3} mais</div>` : ''}
+            </div>
+          </div>
+        `;
+
+        currentRenderDate.setDate(currentRenderDate.getDate() + 1);
+      }
+
+      document.getElementById('calendar-days').innerHTML = html;
+    }
+
+    // Selecionar data
+    function selectDate(dateStr) {
+      selectedDate = dateStr;
+      const date = new Date(dateStr + 'T00:00:00');
+      const dayTasks = tasks.filter(t => t.due_date === dateStr);
+
+      document.getElementById('selected-day-title').textContent = 
+        `${dayNames[date.getDay()]}, ${date.getDate()} de ${monthNames[date.getMonth()]} de ${date.getFullYear()}`;
+
+      if (dayTasks.length > 0) {
+        document.getElementById('selected-day-tasks-list').innerHTML = dayTasks.map(task => {
+          const statusLabels = {
+            'pendente': 'Pendente',
+            'em_progresso': 'Em Progresso',
+            'concluida': 'Concluída'
+          };
+          const priorityLabels = {
+            'baixa': 'Baixa',
+            'media': 'Média',
+            'alta': 'Alta'
+          };
+          return `
+            <div class="task-item">
+              <div class="task-item-title">${task.title}</div>
+              ${task.description ? `<div class="task-item-description">${task.description}</div>` : ''}
+              <div class="task-item-meta">
+                <span class="task-badge ${task.status}">${statusLabels[task.status]}</span>
+                <span class="task-badge prioridade-${task.priority}">Prioridade ${priorityLabels[task.priority]}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+        document.getElementById('selected-day-card').style.display = 'block';
+      } else {
+        document.getElementById('selected-day-tasks-list').innerHTML = `
+          <div class="empty-day">
+            <p>Nenhuma tarefa para este dia.</p>
+          </div>
+        `;
+        document.getElementById('selected-day-card').style.display = 'block';
+      }
+
+      renderCalendar();
+    }
+
+    // Inicializar
+    loadNavbar();
+    
+    // Atualizar ícone do tema
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.updateThemeToggle();
+    }
+    loadTasks();
+  </script>
+</body>
+</html>

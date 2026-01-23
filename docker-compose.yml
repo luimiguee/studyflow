@@ -1,0 +1,78 @@
+services:
+  # Servidor PHP/Apache
+  web:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.backend
+    container_name: studyflow-web
+    ports:
+      - "5500:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/apache/logs:/var/log/apache2
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=studyflow_user
+      - DB_PASSWORD=studyflow_pass
+      - DB_NAME=studyflow
+      - JWT_SECRET=${JWT_SECRET:-seu_secret_jwt_aqui_mude_em_producao}
+      - API_URL=http://localhost:5500/api
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-trinvestiments@gmail.com}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-yvtzfeytwxpdazte}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL:-trinvestiments@gmail.com}
+      - SMTP_FROM_NAME=${SMTP_FROM_NAME:-StudyFlow}
+      - SMTP_ENCRYPTION=${SMTP_ENCRYPTION:-tls}
+      - USE_SMTP=${USE_SMTP:-true}
+    depends_on:
+      - db
+    networks:
+      - studyflow-network
+    restart: unless-stopped
+
+  # Base de dados MySQL
+  db:
+    image: mysql:8.0
+    container_name: studyflow-db
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=studyflow
+      - MYSQL_USER=studyflow_user
+      - MYSQL_PASSWORD=studyflow_pass
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    networks:
+      - studyflow-network
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+
+  # phpMyAdmin (opcional - para gestão da base de dados)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: studyflow-phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=studyflow_user
+      - PMA_PASSWORD=studyflow_pass
+      - UPLOAD_LIMIT=300M
+    depends_on:
+      - db
+    networks:
+      - studyflow-network
+    restart: unless-stopped
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  studyflow-network:
+    driver: bridge
+

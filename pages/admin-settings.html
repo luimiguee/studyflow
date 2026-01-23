@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurações - StudyFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/clean.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="../index.html" class="navbar-brand">
+          <div class="navbar-logo">S</div>
+          <span>StudyFlow</span>
+        </a>
+        <nav>
+          <ul class="navbar-nav" id="navbar-menu"></ul>
+          <button class="theme-toggle" aria-label="Alternar tema" onclick="ThemeManager.toggleTheme()">
+            <span class="theme-icon">🌙</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <div class="page-container">
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">Configurações</h1>
+        <p class="page-subtitle">Configurações do sistema</p>
+      </div>
+
+      <!-- Alert Container -->
+      <div id="alert-container"></div>
+
+      <!-- Informações do Sistema -->
+      <div class="card mb-4">
+        <h2 style="margin-bottom: 1.5rem;">Informações do Sistema</h2>
+        <div class="grid grid-2">
+          <div>
+            <div style="font-weight: 500; margin-bottom: 0.5rem; color: var(--subtext);">Versão</div>
+            <div style="font-size: 1.25rem; font-weight: 600;">1.0.0</div>
+          </div>
+          <div>
+            <div style="font-weight: 500; margin-bottom: 0.5rem; color: var(--subtext);">Ambiente</div>
+            <div style="font-size: 1.25rem; font-weight: 600;">Produção</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estatísticas Rápidas -->
+      <div class="card mb-4">
+        <h2 style="margin-bottom: 1.5rem;">Estatísticas Rápidas</h2>
+        <div id="quick-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+          <div>
+            <div style="font-weight: 500; margin-bottom: 0.5rem; color: var(--subtext);">Total de Usuários</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--primary);" id="stats-users">-</div>
+          </div>
+          <div>
+            <div style="font-weight: 500; margin-bottom: 0.5rem; color: var(--subtext);">Total de Tarefas</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--secondary);" id="stats-tasks">-</div>
+          </div>
+          <div>
+            <div style="font-weight: 500; margin-bottom: 0.5rem; color: var(--subtext);">Total de Logs</div>
+            <div style="font-size: 1.5rem; font-weight: 600; color: var(--warning);" id="stats-logs">-</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configurações de Tema -->
+      <div class="card mb-4">
+        <h2 style="margin-bottom: 1.5rem;">Aparência</h2>
+        <div class="form-group">
+          <label class="form-label">Tema</label>
+          <select class="form-select" id="theme-select" onchange="changeTheme()">
+            <option value="light">Claro</option>
+            <option value="dark">Escuro</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Ações Rápidas -->
+      <div class="card mb-4">
+        <h2 style="margin-bottom: 1.5rem;">Ações Rápidas</h2>
+        <div class="grid grid-2">
+          <button class="btn btn-outline" onclick="exportData()">Exportar Dados</button>
+          <button class="btn btn-outline" onclick="clearCache()">Limpar Cache</button>
+        </div>
+      </div>
+
+      <!-- Sobre -->
+      <div class="card">
+        <h2 style="margin-bottom: 1.5rem;">Sobre</h2>
+        <p style="color: var(--subtext); margin-bottom: 1rem;">
+          StudyFlow é uma plataforma de gerenciamento de tarefas e estudos desenvolvida para ajudar estudantes a organizarem suas atividades acadêmicas.
+        </p>
+        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+          <div style="font-weight: 500; margin-bottom: 0.5rem;">Desenvolvido com</div>
+          <div style="color: var(--subtext);">PHP, MySQL, HTML, CSS e JavaScript</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/theme.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/admin.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    // Verificar autenticação
+    const user = JSON.parse(localStorage.getItem('studyflow-user') || 'null');
+    if (!user || user.role !== 'admin') {
+      window.location.href = '../login.html';
+    }
+
+    // Carregar navbar
+    function loadNavbar() {
+      const menu = document.getElementById('navbar-menu');
+      menu.innerHTML = `
+        <li><a href="admin-dashboard.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="admin-users.html" class="navbar-link">Usuários</a></li>
+        <li><a href="admin-logs.html" class="navbar-link">Logs</a></li>
+        <li><a href="admin-settings.html" class="navbar-link active">Configurações</a></li>
+        <li><a href="#" onclick="API.logout(); return false;" class="navbar-link">Sair</a></li>
+      `;
+    }
+
+    // Carregar estatísticas
+    async function loadStats() {
+      try {
+        const stats = await Admin.loadStats();
+        document.getElementById('stats-users').textContent = stats.users.total;
+        document.getElementById('stats-tasks').textContent = stats.tasks.total;
+        document.getElementById('stats-logs').textContent = stats.logs.total;
+      } catch (error) {
+        console.error('Erro ao carregar estatísticas:', error);
+      }
+    }
+
+    // Carregar tema
+    function loadTheme() {
+      const theme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+      document.getElementById('theme-select').value = theme;
+    }
+
+    // Mudar tema
+    function changeTheme() {
+      const theme = document.getElementById('theme-select').value;
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+    }
+
+    // Exportar dados
+    function exportData() {
+      alert('Funcionalidade de exportação será implementada em breve.');
+    }
+
+    // Limpar cache
+    function clearCache() {
+      if (confirm('Tem certeza que deseja limpar o cache?')) {
+        localStorage.removeItem('studyflow-user');
+        localStorage.removeItem('studyflow-token');
+        window.location.reload();
+      }
+    }
+
+    // Inicializar
+    loadNavbar();
+    
+    // Atualizar ícone do tema
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.updateThemeToggle();
+    }
+    loadStats();
+    loadTheme();
+  </script>
+</body>
+</html>
+

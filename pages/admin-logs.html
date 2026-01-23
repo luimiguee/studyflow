@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logs de Atividade - StudyFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/clean.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="../index.html" class="navbar-brand">
+          <div class="navbar-logo">S</div>
+          <span>StudyFlow</span>
+        </a>
+        <nav>
+          <ul class="navbar-nav" id="navbar-menu"></ul>
+          <button class="theme-toggle" aria-label="Alternar tema" onclick="ThemeManager.toggleTheme()">
+            <span class="theme-icon">🌙</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <div class="page-container">
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">Logs de Atividade</h1>
+        <p class="page-subtitle">Registro de todas as atividades do sistema</p>
+      </div>
+
+      <!-- Alert Container -->
+      <div id="alert-container"></div>
+
+      <!-- Filtros -->
+      <div class="card mb-4">
+        <div class="grid grid-4">
+          <div class="form-group">
+            <label class="form-label">Buscar</label>
+            <input type="text" class="form-input" id="search-input" placeholder="Buscar em logs...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ação</label>
+            <select class="form-select" id="action-filter">
+              <option value="">Todas</option>
+              <option value="Login">Login</option>
+              <option value="Registro">Registro</option>
+              <option value="Criação de Tarefa">Criação de Tarefa</option>
+              <option value="Atualização de Tarefa">Atualização de Tarefa</option>
+              <option value="Exclusão de Tarefa">Exclusão de Tarefa</option>
+              <option value="Criação de Usuário">Criação de Usuário</option>
+              <option value="Atualização de Usuário">Atualização de Usuário</option>
+              <option value="Exclusão de Usuário">Exclusão de Usuário</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data Início</label>
+            <input type="date" class="form-input" id="start-date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Data Fim</label>
+            <input type="date" class="form-input" id="end-date">
+          </div>
+        </div>
+        <div class="flex gap-2" style="margin-top: 1rem;">
+          <button class="btn btn-primary" onclick="applyFilters()">Filtrar</button>
+          <button class="btn btn-outline" onclick="clearFilters()">Limpar</button>
+        </div>
+      </div>
+
+      <!-- Tabela de Logs -->
+      <div class="card">
+        <div id="logs-loading" style="text-align: center; padding: 2rem;">
+          <div class="spinner" style="margin: 0 auto;"></div>
+          <p style="margin-top: 1rem; color: var(--subtext);">Carregando logs...</p>
+        </div>
+        <div id="logs-table" style="display: none; border-radius: 12px; overflow: hidden;">
+          <table style="width: 100%; border-collapse: separate; border-spacing: 0;">
+            <thead>
+              <tr style="background: var(--hover-bg);">
+                <th style="padding: 1.25rem 1.5rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtext);">Data/Hora</th>
+                <th style="padding: 1.25rem 1.5rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtext);">Utilizador</th>
+                <th style="padding: 1.25rem 1.5rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtext);">Ação</th>
+                <th style="padding: 1.25rem 1.5rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtext);">Detalhes</th>
+                <th style="padding: 1.25rem 1.5rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtext);">IP</th>
+              </tr>
+            </thead>
+            <tbody id="logs-tbody"></tbody>
+          </table>
+        </div>
+        <div id="logs-empty" style="display: none; text-align: center; padding: 3rem;">
+          <p style="color: var(--subtext);">Nenhum log encontrado</p>
+        </div>
+        <div id="pagination" style="padding: 1rem; border-top: 1px solid var(--border); display: none;">
+          <div class="flex-between">
+            <div style="color: var(--subtext);" id="pagination-info"></div>
+            <div class="flex gap-2">
+              <button class="btn btn-sm btn-outline" id="prev-page" onclick="changePage(-1)">Anterior</button>
+              <button class="btn btn-sm btn-outline" id="next-page" onclick="changePage(1)">Próxima</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/theme.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/admin.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    // Verificar autenticação
+    const user = JSON.parse(localStorage.getItem('studyflow-user') || 'null');
+    if (!user || user.role !== 'admin') {
+      window.location.href = '../login.html';
+    }
+
+    let currentPage = 1;
+    let pagination = null;
+    let filters = {};
+
+    // Carregar navbar
+    function loadNavbar() {
+      const menu = document.getElementById('navbar-menu');
+      menu.innerHTML = `
+        <li><a href="admin-dashboard.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="admin-users.html" class="navbar-link">Usuários</a></li>
+        <li><a href="admin-logs.html" class="navbar-link active">Logs</a></li>
+        <li><a href="admin-settings.html" class="navbar-link">Configurações</a></li>
+        <li><a href="#" onclick="API.logout(); return false;" class="navbar-link">Sair</a></li>
+      `;
+    }
+
+    // Carregar logs
+    async function loadLogs(page = 1) {
+      try {
+        document.getElementById('logs-loading').style.display = 'block';
+        document.getElementById('logs-table').style.display = 'none';
+        document.getElementById('logs-empty').style.display = 'none';
+        document.getElementById('pagination').style.display = 'none';
+
+        const params = {
+          page: page,
+          limit: 50,
+          ...filters
+        };
+
+        const data = await Admin.loadLogs(params);
+        pagination = data.pagination;
+        displayLogs(data.logs);
+
+        document.getElementById('logs-loading').style.display = 'none';
+        if (data.logs && data.logs.length > 0) {
+          document.getElementById('logs-table').style.display = 'block';
+          document.getElementById('pagination').style.display = 'flex';
+          updatePagination();
+        } else {
+          document.getElementById('logs-empty').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Erro ao carregar logs:', error);
+        document.getElementById('logs-loading').style.display = 'none';
+        Utils.showError('alert-container', 'Erro ao carregar logs: ' + error.message);
+      }
+    }
+
+    // Exibir logs
+    function displayLogs(logs) {
+      const tbody = document.getElementById('logs-tbody');
+      tbody.innerHTML = logs.map((log, index) => `
+        <tr style="border-top: ${index === 0 ? 'none' : '1px solid var(--border)'}; transition: background 0.2s;">
+          <td style="padding: 1.25rem 1.5rem; font-size: 0.875rem; color: var(--subtext);">${Admin.formatDate(log.created_at)}</td>
+          <td style="padding: 1.25rem 1.5rem;">
+            <div style="font-weight: 500; margin-bottom: 0.25rem;">${log.user_name || log.user_email}</div>
+            <div style="font-size: 0.8125rem; color: var(--subtext);">${log.user_email}</div>
+          </td>
+          <td style="padding: 1.25rem 1.5rem;">
+            <span style="padding: 0.375rem 0.875rem; border-radius: 12px; font-size: 0.8125rem; font-weight: 500; background: var(--hover-bg); color: var(--text);">
+              ${log.action}
+            </span>
+          </td>
+          <td style="padding: 1.25rem 1.5rem; max-width: 300px; word-wrap: break-word; color: var(--text);">${log.details || '-'}</td>
+          <td style="padding: 1.25rem 1.5rem; font-size: 0.8125rem; color: var(--subtext); font-family: monospace;">${log.ip_address || '-'}</td>
+        </tr>
+      `).join('');
+      
+      // Adicionar hover effect
+      const rows = tbody.querySelectorAll('tr');
+      rows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+          this.style.backgroundColor = 'var(--hover-bg)';
+        });
+        row.addEventListener('mouseleave', function() {
+          this.style.backgroundColor = 'transparent';
+        });
+      });
+    }
+
+    // Aplicar filtros
+    function applyFilters() {
+      filters = {};
+      const search = document.getElementById('search-input').value.trim();
+      const action = document.getElementById('action-filter').value;
+      const startDate = document.getElementById('start-date').value;
+      const endDate = document.getElementById('end-date').value;
+
+      if (search) filters.search = search;
+      if (action) filters.action = action;
+      if (startDate) filters.start_date = startDate;
+      if (endDate) filters.end_date = endDate;
+
+      currentPage = 1;
+      loadLogs(currentPage);
+    }
+
+    // Limpar filtros
+    function clearFilters() {
+      document.getElementById('search-input').value = '';
+      document.getElementById('action-filter').value = '';
+      document.getElementById('start-date').value = '';
+      document.getElementById('end-date').value = '';
+      filters = {};
+      currentPage = 1;
+      loadLogs(currentPage);
+    }
+
+    // Mudar página
+    function changePage(delta) {
+      const newPage = currentPage + delta;
+      if (newPage >= 1 && newPage <= pagination.pages) {
+        currentPage = newPage;
+        loadLogs(currentPage);
+      }
+    }
+
+    // Atualizar paginação
+    function updatePagination() {
+      document.getElementById('pagination-info').textContent = 
+        `Página ${pagination.page} de ${pagination.pages} (${pagination.total} registros)`;
+      document.getElementById('prev-page').disabled = pagination.page <= 1;
+      document.getElementById('next-page').disabled = pagination.page >= pagination.pages;
+    }
+
+    // Inicializar
+    loadNavbar();
+    loadLogs();
+    
+    // Atualizar ícone do tema
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.updateThemeToggle();
+    }
+  </script>
+</body>
+</html>
+

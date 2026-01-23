@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Admin - StudyFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/clean.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="../index.html" class="navbar-brand">
+          <div class="navbar-logo">S</div>
+          <span>StudyFlow</span>
+        </a>
+        <nav>
+          <ul class="navbar-nav" id="navbar-menu"></ul>
+          <button class="theme-toggle" aria-label="Alternar tema" onclick="ThemeManager.toggleTheme()">
+            <span class="theme-icon">🌙</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <div class="page-container">
+    <div class="container">
+      <div class="page-header">
+        <h1 class="page-title">Dashboard Administrativo</h1>
+        <p class="page-subtitle" id="welcome-message">Visão geral do sistema</p>
+      </div>
+
+      <!-- Estatísticas Principais -->
+      <div class="grid grid-4 mb-4">
+        <div class="card">
+          <div class="card-title" style="font-size: 0.875rem; color: var(--subtext); margin-bottom: 0.5rem;">Total de Usuários</div>
+          <div style="font-size: 2rem; font-weight: bold; color: var(--primary);" id="total-users">0</div>
+          <div style="font-size: 0.75rem; color: var(--subtext); margin-top: 0.5rem;" id="users-breakdown"></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.875rem; color: var(--subtext); margin-bottom: 0.5rem;">Total de Tarefas</div>
+          <div style="font-size: 2rem; font-weight: bold; color: var(--secondary);" id="total-tasks">0</div>
+          <div style="font-size: 0.75rem; color: var(--subtext); margin-top: 0.5rem;" id="tasks-breakdown"></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.875rem; color: var(--subtext); margin-bottom: 0.5rem;">Tarefas Concluídas</div>
+          <div style="font-size: 2rem; font-weight: bold; color: var(--secondary);" id="completed-tasks">0</div>
+          <div style="font-size: 0.75rem; color: var(--subtext); margin-top: 0.5rem;">% do total</div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="font-size: 0.875rem; color: var(--subtext); margin-bottom: 0.5rem;">Logs de Atividade</div>
+          <div style="font-size: 2rem; font-weight: bold; color: var(--warning);" id="total-logs">0</div>
+          <div style="font-size: 0.75rem; color: var(--subtext); margin-top: 0.5rem;">Registros</div>
+        </div>
+      </div>
+
+      <!-- Gráficos -->
+      <div class="grid grid-2 mb-4">
+        <div class="card">
+          <h3 style="margin-bottom: 1rem;">Usuários por Tipo</h3>
+          <canvas id="users-chart"></canvas>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom: 1rem;">Tarefas por Status</h3>
+          <canvas id="tasks-status-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="grid grid-2 mb-4">
+        <div class="card">
+          <h3 style="margin-bottom: 1rem;">Tarefas por Prioridade</h3>
+          <canvas id="tasks-priority-chart"></canvas>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom: 1rem;">Atividades Recentes (7 dias)</h3>
+          <canvas id="activities-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Usuários Mais Ativos -->
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="flex-between mb-2">
+            <h3>Usuários Mais Ativos</h3>
+            <a href="admin-users.html" class="btn btn-sm btn-outline">Ver todos</a>
+          </div>
+          <div id="most-active-users">
+            <p style="color: var(--subtext);">Carregando...</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="flex-between mb-2">
+            <h3>Atividades Recentes</h3>
+            <a href="admin-logs.html" class="btn btn-sm btn-outline">Ver todos</a>
+          </div>
+          <div id="recent-activities">
+            <p style="color: var(--subtext);">Carregando...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/theme.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/admin.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    // Verificar autenticação e permissões
+    Utils.requireAuth(['admin']);
+
+    // Carregar navbar
+    function loadNavbar() {
+      const user = JSON.parse(localStorage.getItem('studyflow-user') || 'null');
+      const menu = document.getElementById('navbar-menu');
+      
+      if (user) {
+        menu.innerHTML = `
+          <li><a href="admin-dashboard.html" class="navbar-link active">Dashboard</a></li>
+          <li><a href="admin-users.html" class="navbar-link">Usuários</a></li>
+          <li><a href="admin-logs.html" class="navbar-link">Logs</a></li>
+          <li><a href="admin-settings.html" class="navbar-link">Configurações</a></li>
+          <li><a href="#" onclick="API.logout(); return false;" class="navbar-link">Sair</a></li>
+        `;
+      }
+    }
+
+    // Carregar dashboard
+    async function loadDashboard() {
+      try {
+        const stats = await Admin.loadStats();
+        
+        // Estatísticas principais
+        document.getElementById('total-users').textContent = stats.users.total;
+        document.getElementById('total-tasks').textContent = stats.tasks.total;
+        document.getElementById('completed-tasks').textContent = stats.tasks.completed;
+        document.getElementById('total-logs').textContent = stats.logs.total;
+
+        // Breakdown de usuários
+        const usersBreakdown = stats.users.byRole.map(r => `${r.role === 'admin' ? 'Admin' : 'Estudante'}: ${r.count}`).join(', ');
+        document.getElementById('users-breakdown').textContent = usersBreakdown;
+
+        // Breakdown de tarefas
+        const completedPercent = stats.tasks.total > 0 
+          ? Math.round((stats.tasks.completed / stats.tasks.total) * 100) 
+          : 0;
+        document.querySelector('#completed-tasks + div').textContent = `${completedPercent}% do total`;
+
+        // Gráfico de usuários por tipo
+        const usersCtx = document.getElementById('users-chart').getContext('2d');
+        new Chart(usersCtx, {
+          type: 'doughnut',
+          data: {
+            labels: stats.users.byRole.map(r => r.role === 'admin' ? 'Admin' : 'Estudante'),
+            datasets: [{
+              data: stats.users.byRole.map(r => parseInt(r.count)),
+              backgroundColor: ['#4A90E2', '#50E3C2']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true
+          }
+        });
+
+        // Gráfico de tarefas por status
+        const tasksStatusCtx = document.getElementById('tasks-status-chart').getContext('2d');
+        new Chart(tasksStatusCtx, {
+          type: 'bar',
+          data: {
+            labels: stats.tasks.byStatus.map(s => Admin.formatStatus(s.status)),
+            datasets: [{
+              label: 'Tarefas',
+              data: stats.tasks.byStatus.map(s => parseInt(s.count)),
+              backgroundColor: '#4A90E2'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+
+        // Gráfico de tarefas por prioridade
+        const tasksPriorityCtx = document.getElementById('tasks-priority-chart').getContext('2d');
+        new Chart(tasksPriorityCtx, {
+          type: 'pie',
+          data: {
+            labels: stats.tasks.byPriority.map(p => Admin.formatPriority(p.priority)),
+            datasets: [{
+              data: stats.tasks.byPriority.map(p => parseInt(p.count)),
+              backgroundColor: ['#50E3C2', '#F5A623', '#D0021B']
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true
+          }
+        });
+
+        // Gráfico de atividades recentes
+        const activitiesCtx = document.getElementById('activities-chart').getContext('2d');
+        const activityDates = stats.recentActivities.map(a => {
+          const date = new Date(a.date);
+          return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        }).reverse();
+        const activityCounts = stats.recentActivities.map(a => parseInt(a.count)).reverse();
+        
+        new Chart(activitiesCtx, {
+          type: 'line',
+          data: {
+            labels: activityDates,
+            datasets: [{
+              label: 'Atividades',
+              data: activityCounts,
+              borderColor: '#4A90E2',
+              backgroundColor: 'rgba(74, 144, 226, 0.1)',
+              tension: 0.4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+
+        // Usuários mais ativos
+        const mostActiveHtml = stats.mostActiveUsers.length > 0
+          ? stats.mostActiveUsers.map(user => `
+              <div style="padding: 0.75rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-weight: 500;">${user.name}</div>
+                  <div style="font-size: 0.875rem; color: var(--subtext);">${user.email}</div>
+                </div>
+                <div style="font-weight: bold; color: var(--primary);">${user.activity_count}</div>
+              </div>
+            `).join('')
+          : '<p style="color: var(--subtext);">Nenhum dado disponível</p>';
+        document.getElementById('most-active-users').innerHTML = mostActiveHtml;
+
+        // Carregar atividades recentes
+        const logsData = await Admin.loadLogs({ limit: 5 });
+        const recentLogsHtml = logsData.logs && logsData.logs.length > 0
+          ? logsData.logs.map(log => `
+              <div style="padding: 0.75rem; border-bottom: 1px solid var(--border);">
+                <div style="font-weight: 500; margin-bottom: 0.25rem;">${log.action}</div>
+                <div style="font-size: 0.875rem; color: var(--subtext);">${log.details}</div>
+                <div style="font-size: 0.75rem; color: var(--subtext); margin-top: 0.25rem;">${Admin.formatRelativeDate(log.created_at)}</div>
+              </div>
+            `).join('')
+          : '<p style="color: var(--subtext);">Nenhuma atividade recente</p>';
+        document.getElementById('recent-activities').innerHTML = recentLogsHtml;
+
+      } catch (error) {
+        console.error('Erro ao carregar dashboard:', error);
+        alert('Erro ao carregar dados do dashboard. Verifique se está autenticado.');
+      }
+    }
+
+    // Inicializar
+    loadNavbar();
+    loadDashboard();
+    
+    // Atualizar ícone do tema
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.updateThemeToggle();
+    }
+  </script>
+</body>
+</html>
+
