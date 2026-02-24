@@ -430,5 +430,6 @@ Para debug no navegador, use as ferramentas de desenvolvimento (F12).
 Este projeto é open source e está disponível sob a licença MIT.
 
 ## 👨‍💻 Autor
+luimiguee ©2026
 
-Desenvolvido com ❤️ para gestão eficiente de tarefas.---**Nota**: Para questões ou problemas, verifique os logs do servidor e do navegador.
+---**Nota**: Para questões ou problemas, verifique os logs do servidor e do navegador.
